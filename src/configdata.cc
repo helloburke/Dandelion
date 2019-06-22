@@ -52,7 +52,12 @@ namespace  Dandelion{
             }else if(key == "password"){
                 password_ = uvalue.get_str();
             }else if(key == "port_password"){
-                port_password_ = uvalue.get_str();
+                UniValue port_password_obj = uvalue.get_obj(); 
+                std::vector<std::string> ports = port_password_obj.getKeys();
+                for(int j=0; j<ports.size(); ++j){
+                    short port = atoi(ports[j].c_str());
+                    port_password_[port] = port_password_obj[ports[j]].get_str(); 
+                }
             }else if(key == "manager_address"){
                 manager_address_ = uvalue.get_str();
             }else if(key == "user"){
@@ -69,13 +74,14 @@ namespace  Dandelion{
                 daemon_ = uvalue.get_bool();
             }else if(key == "workers"){
                 workers_ = uvalue.get_int(); 
-            }else if(key == "forbidden-ip="){
+            }else if(key == "forbidden-ip"){
                 int pos1 = 0, pos2 = 0;
                 std::string s = uvalue.get_str();
                 while(true){
                     pos2 = s.find(",",pos1);
                     if(pos2 == std::string::npos){
                         pos2 = s.size();
+                        std::cout<<s.substr(pos1, pos2-pos1)<<std::endl;
                         forbidden_ip_.push_back(s.substr(pos1, pos2-pos1));
                         break;
                     }
@@ -208,10 +214,10 @@ namespace  Dandelion{
         ss<<"local_address="<<local_address_<<"\n";
         ss<<"local_port=="<<local_port_<<"\n";
         ss<<"password="<<password_<<"\n";
-        ss<<"port_password_="<<port_password_<<"\n";
+        ss<<"port_password_="<<printMap(port_password_)<<"\n";
         ss<<"method="<<method_<<"\n";
         ss<<"manager_address="<<manager_address_<<"\n";
-        ss<<"forbidden_ip="<<user_<<"\n";
+        ss<<"forbidden_ip="<<printVector(forbidden_ip_)<<"\n";
         ss<<"pid-file="<<pid_file_<<"\n";
         ss<<"log-file="<<log_file_<<"\n";
         ss<<"daemon="<<daemon_<<"\n";
@@ -223,9 +229,11 @@ namespace  Dandelion{
     }
 } 
 
+/*
 int main(int argc,char** argv){
     Dandelion::ConfigData config;
     config.Load(argc, argv);
     std::cout<<config.ToString();
     return 0;
 }
+*/

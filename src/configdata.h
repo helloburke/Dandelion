@@ -8,6 +8,8 @@
 #include <string>
 #include <iostream>
 #include <fstream>
+#include <unordered_map>
+#include "util.h"
 
 namespace Dandelion{
 
@@ -20,7 +22,7 @@ private:
     short local_port_;
 
     std::string password_;
-    std::string port_password_;
+    std::unordered_map<short, std::string> port_password_;
     std::string method_;
     std::string manager_address_;
     std::string user_;
@@ -45,7 +47,6 @@ public:
     ConfigData(){
         method_ = "aes-256-cfb";
         password_ = "";
-        port_password_ = "";
         server_host_ = "0.0.0.0";
         server_port_ = 8399; 
 
@@ -60,6 +61,10 @@ public:
         daemon_ = false;
         verbose_ = false;
         fastopen_ = true;
+    }
+
+    bool daemon(){
+        return daemon_;
     }
 
     bool Load(int argc, char** argv);
