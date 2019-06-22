@@ -32,9 +32,10 @@ private:
     bool verbose_;
     bool fastopen_;
 
-    short timeout_;
-    short workers_;
-    std::string FindConfig();
+    int timeout_;
+    int workers_;
+private:
+    std::string FindConfig(int argc, char** argv);
     bool LoadFromFile(const std::string& configfile);
     void ShowHelp();
     void ShowVersion();
@@ -50,9 +51,19 @@ public:
 
         local_address_ = "127.0.0.1";
         local_port_ = 1080;
+
+        pid_file_ = "/var/log/dandelion.pid";
+        log_file_ = "/var/log/dandelion.log";
+        timeout_ = 0;
+        workers_ = 1;
+        verbose_ = false;
+        daemon_ = false;
+        verbose_ = false;
+        fastopen_ = true;
     }
 
     bool Load(int argc, char** argv);
+    std::string ToString();
 };
 
 }

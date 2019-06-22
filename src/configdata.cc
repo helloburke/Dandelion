@@ -1,15 +1,90 @@
 #include "configdata.h"
+#include <sstream>
+#include "univalue.h"
 namespace  Dandelion{
-    std::string ConfigData::FindConfig(){
-        std::string default_config_file = "config.json";
-        std::ifstream f(default_config_file.c_str());
-        if(f.good()){
-            return  default_config_file;
+    std::string ConfigData::FindConfig(int argc, char** argv){
+        std::string config_file = "config.json";
+        int ch;
+        opterr = 0;
+        ch=getopt(argc, argv, "c:");
+        if(ch == 'c'){
+            config_file = optarg;
         }
+
+        std::cout<<"configfile="<<config_file<<std::endl;
+        std::ifstream f(config_file.c_str());
+        if(f.good()){
+            std::string str((std::istreambuf_iterator<char>(f)),  
+                                     std::istreambuf_iterator<char>()); 
+            if(!LoadFromFile(str)){
+                std::cout<<"invalid configfile, exit\n";
+                exit(0);
+            };
+            return config_file;
+        }
+        std::cout<<"notfoudnconfig"<<std::endl;
         return "";
     }
 
-    bool ConfigData::LoadFromFile(const std::string& configfile){
+    bool ConfigData::LoadFromFile(const std::string& configstr){
+        if(configstr.size() == 0){
+            return false;
+        }
+        UniValue val;
+        if(!val.read(configstr)){
+            std::cout<<"invalid config"<<std::endl;
+            return false;
+        };
+        const std::vector<std::string>& keys = val.getKeys();
+        for(int i=0; i<keys.size(); ++i)
+        {
+            const std::string& key = keys[i];
+            UniValue uvalue = find_value(val, key);
+
+            if(key == "server"){
+                server_host_ =  uvalue.get_str();
+            }else if(key == "server_port"){
+                server_port_ = uvalue.get_int();
+            }else if(key == "local_address"){
+                local_address_ = uvalue.get_str();
+            }else if(key == "local_port"){
+                local_port_ = uvalue.get_int();
+            }else if(key == "password"){
+                password_ = uvalue.get_str();
+            }else if(key == "port_password"){
+                port_password_ = uvalue.get_str();
+            }else if(key == "manager_address"){
+                manager_address_ = uvalue.get_str();
+            }else if(key == "user"){
+                user_ = uvalue.get_str();
+            }else if(key == "timeout"){
+                timeout_ = uvalue.get_int();
+            }else if(key == "fast-open"){
+                fastopen_ = true;
+            }else if(key == "pid-file"){
+                pid_file_ = uvalue.get_str();
+            }else if(key == "log-file"){
+                log_file_ = uvalue.get_str();
+            }else if(key == "daemon"){
+                daemon_ = uvalue.get_bool();
+            }else if(key == "workers"){
+                workers_ = uvalue.get_int(); 
+            }else if(key == "forbidden-ip="){
+                int pos1 = 0, pos2 = 0;
+                std::string s = uvalue.get_str();
+                while(true){
+                    pos2 = s.find(",",pos1);
+                    if(pos2 == std::string::npos){
+                        pos2 = s.size();
+                        forbidden_ip_.push_back(s.substr(pos1, pos2-pos1));
+                        break;
+                    }
+                    forbidden_ip_.push_back(s.substr(pos1, pos2-pos1));
+                    pos1 = pos2+1;
+                }
+            }
+        }
+        return true;
     }
 
     void ConfigData::ShowHelp(){
@@ -22,9 +97,7 @@ namespace  Dandelion{
 
     bool ConfigData::LoadLong(const option* longopts, int longpos, char* value){
 
-        std::cout<<"longpos="<<longpos<<std::endl;
         std::string key = longopts[longpos].name; 
-        std::cout<<"ke="<<key<<std::endl;
             if(key == "help"){
                 ShowHelp();
                 exit(0);
@@ -64,7 +137,8 @@ namespace  Dandelion{
     }
 
     bool ConfigData::Load(int argc, char** argv){
-        std::string  config_file = this->FindConfig(); 
+
+        FindConfig(argc, argv); 
 
         const char shortopts[] = "hd:s:p:k:m:c:t:vq";
         int flag = 0;
@@ -82,12 +156,11 @@ namespace  Dandelion{
 
         int ch;
         opterr = 0;
+        optind = 0;
         int longpos = -1;
         while((ch=getopt_long(argc, argv, shortopts, longopts,&longpos))!=-1){
-            std::cout<<"ch="<<ch<<" args="<<std::endl;
             switch(ch){
                 case 0:
-                    std::cout<<"hhhh\n";
                     LoadLong(longopts, longpos, optarg);
                     break;
                 case 'p':
@@ -117,24 +190,42 @@ namespace  Dandelion{
                     ShowHelp();
                     exit(0);
                 case 'd':
-                    daemon_ = true;
+                    daemon_ = optarg;
                     break;
                 case 'q':
                     verbose_ = true;
-                    break;
-                case 'c':
-                    config_file = "";
                     break;
             }
         }
         return true;
     }
 
-
+    std::string ConfigData::ToString(){
+        std::stringstream ss;
+        ss<<"configdata is\n";
+        ss<<"server_host="<<server_host_<<"\n";
+        ss<<"server_port="<<server_port_<<"\n";
+        ss<<"local_address="<<local_address_<<"\n";
+        ss<<"local_port=="<<local_port_<<"\n";
+        ss<<"password="<<password_<<"\n";
+        ss<<"port_password_="<<port_password_<<"\n";
+        ss<<"method="<<method_<<"\n";
+        ss<<"manager_address="<<manager_address_<<"\n";
+        ss<<"forbidden_ip="<<user_<<"\n";
+        ss<<"pid-file="<<pid_file_<<"\n";
+        ss<<"log-file="<<log_file_<<"\n";
+        ss<<"daemon="<<daemon_<<"\n";
+        ss<<"verbose_="<<verbose_<<"\n";
+        ss<<"fastopen="<<fastopen_<<"\n";
+        ss<<"timeout="<<timeout_<<"\n";
+        ss<<"workers="<<workers_<<"\n";
+        return ss.str();
+    }
 } 
 
 int main(int argc,char** argv){
     Dandelion::ConfigData config;
     config.Load(argc, argv);
+    std::cout<<config.ToString();
     return 0;
 }
