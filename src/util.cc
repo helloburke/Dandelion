@@ -19,7 +19,7 @@ namespace Dandelion{
     std::string printVector(const std::vector<std::string>& v){
         std::string s = "";
         for(int i=0; i<v.size(); ++i){
-            s += v[i];
+            s += v[i]+",";
         }
         return s;
     }
@@ -28,7 +28,7 @@ namespace Dandelion{
         std::string s = "";
         std::unordered_map<short, std::string>::const_iterator iter;
         for(iter=v.begin(); iter!=v.end(); ++iter){
-            s += iter->first +" = " + iter->second+"\n";
+            s += iter->first +" = " + iter->second+"--";
         }
         return s;
     }

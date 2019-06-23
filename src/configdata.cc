@@ -42,7 +42,7 @@ namespace  Dandelion{
             UniValue uvalue = find_value(val, key);
 
             if(key == "server"){
-                server_host_ =  uvalue.get_str();
+                server_address_ =  uvalue.get_str();
             }else if(key == "server_port"){
                 server_port_ = uvalue.get_int();
             }else if(key == "local_address"){
@@ -178,7 +178,7 @@ namespace  Dandelion{
                     local_port_ = atoi(optarg);
                     break;
                 case 's':
-                    server_host_= std::string(optarg);
+                    server_address_= std::string(optarg);
                     break;
                 case 'm':
                     method_ = std::string(optarg);
@@ -203,28 +203,31 @@ namespace  Dandelion{
                     break;
             }
         }
+
+        if(port_password_.size() == 0){
+            port_password_[server_port_] =  password_;
+        }
         return true;
     }
 
     std::string ConfigData::ToString(){
         std::stringstream ss;
-        ss<<"configdata is\n";
-        ss<<"server_host="<<server_host_<<"\n";
-        ss<<"server_port="<<server_port_<<"\n";
-        ss<<"local_address="<<local_address_<<"\n";
-        ss<<"local_port=="<<local_port_<<"\n";
-        ss<<"password="<<password_<<"\n";
-        ss<<"port_password_="<<printMap(port_password_)<<"\n";
-        ss<<"method="<<method_<<"\n";
-        ss<<"manager_address="<<manager_address_<<"\n";
-        ss<<"forbidden_ip="<<printVector(forbidden_ip_)<<"\n";
-        ss<<"pid-file="<<pid_file_<<"\n";
-        ss<<"log-file="<<log_file_<<"\n";
-        ss<<"daemon="<<daemon_<<"\n";
-        ss<<"verbose_="<<verbose_<<"\n";
-        ss<<"fastopen="<<fastopen_<<"\n";
-        ss<<"timeout="<<timeout_<<"\n";
-        ss<<"workers="<<workers_<<"\n";
+        ss<<"server_address="<<server_address_<<"|";
+        ss<<"server_port="<<server_port_<<"|";
+        ss<<"local_address="<<local_address_<<"|";
+        ss<<"local_port=="<<local_port_<<"|";
+        ss<<"password="<<password_<<"|";
+        ss<<"port_password_="<<printMap(port_password_)<<"|";
+        ss<<"method="<<method_<<"|";
+        ss<<"manager_address="<<manager_address_<<"|";
+        ss<<"forbidden_ip="<<printVector(forbidden_ip_)<<"|";
+        ss<<"pid-file="<<pid_file_<<"|";
+        ss<<"log-file="<<log_file_<<"|";
+        ss<<"daemon="<<daemon_<<"|";
+        ss<<"verbose_="<<verbose_<<"|";
+        ss<<"fastopen="<<fastopen_<<"|";
+        ss<<"timeout="<<timeout_<<"|";
+        ss<<"workers="<<workers_<<"|";
         return ss.str();
     }
 } 
