@@ -142,29 +142,49 @@ namespace  Dandelion{
     
     }
 
-    bool ConfigData::Load(int argc, char** argv){
+    void ConfigData::getLongOpts(struct option longopts[], bool isLocal){
+        int flag = 0;
+	int pos = 0;
+	//TODO preferipv6 not add
+	//TODO add loglevel
+	if(isLocal){
+	    longopts[pos++] = {"help",no_argument, &flag,0};
+            longopts[pos++] = {"fast-open",required_argument, &flag,0};
+            longopts[pos++] = {"pid-file=",required_argument, &flag ,0};
+            longopts[pos++] = {"log-file=",required_argument, &flag,0};
+            longopts[pos++] = {"user=",required_argument, &flag,0};
+            longopts[pos++] = {"version",required_argument, &flag,0};
+        }else{
+	    longopts[pos++] = {"help",no_argument, &flag,0};
+            longopts[pos++] = {"fast-open",required_argument, &flag,0};
+            longopts[pos++] = {"pid-file=",required_argument, &flag ,0};
+            longopts[pos++] = {"log-file=",required_argument, &flag,0};
+            longopts[pos++] = {"workers=",required_argument, &flag,0};
+            longopts[pos++] = {"forbidden-ip=",required_argument, &flag,0};
+            longopts[pos++] = {"user=",required_argument, &flag,0};
+            longopts[pos++] = {"manager-address=",required_argument, &flag,0};
+            longopts[pos++] = {"version",required_argument, &flag,0};
+	}
+    }
+
+    bool ConfigData::Load(int argc, char** argv, bool isLocal){
 
         FindConfig(argc, argv); 
 
-        const char shortopts[] = "hd:s:p:k:m:c:t:vq";
-        int flag = 0;
-        struct option longopts[] = {
-            {"help",no_argument, &flag,0},
-            {"fast-open",required_argument, &flag,0},
-            {"pid-file=",required_argument, &flag ,0},
-            {"log-file=",required_argument, &flag,0},
-            {"workers=",required_argument, &flag,0},
-            {"forbidden-ip=",required_argument, &flag,0},
-            {"user=",required_argument, &flag,0},
-            {"manager-address=",required_argument, &flag,0},
-            {"version",required_argument, &flag,0},
-        };
+        std::string shortopts = "hd:s:p:k:m:c:t:vq";
+	if(isLocal){
+		shortopts = "hd:s:b:p:k:l:m:c:t:vqa";
+	}
+
+	struct option longopts[10];
+	getLongOpts(longopts, isLocal);
+
 
         int ch;
         opterr = 0;
         optind = 0;
         int longpos = -1;
-        while((ch=getopt_long(argc, argv, shortopts, longopts,&longpos))!=-1){
+        while((ch=getopt_long(argc, argv, shortopts.c_str(), longopts,&longpos))!=-1){
             switch(ch){
                 case 0:
                     LoadLong(longopts, longpos, optarg);

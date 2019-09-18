@@ -43,6 +43,7 @@ private:
     void ShowHelp();
     void ShowVersion();
     bool LoadLong(const option* longopts, int longpos, char* value);
+    void getLongOpts(struct option longopts[], bool isLocal);
 
 public:
     ConfigData(){
@@ -85,7 +86,7 @@ public:
         return port_password();
     }
 
-    bool Load(int argc, char** argv);
+    bool Load(int argc, char** argv, bool isLocal);
     std::string ToString();
 };
 

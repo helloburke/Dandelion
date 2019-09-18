@@ -29,4 +29,7 @@ Desgin
 5. TCPRelay
 
 
+编译：
+安装univalue, https://github.com/jgarzik/univalue.git
+运行make即可
 
